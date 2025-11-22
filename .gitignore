@@ -1,3 +1,4 @@
 build
 sdkconfig.old
+managed_components/espressif__esp_lcd_dxq3d9502
 dependencies.lock

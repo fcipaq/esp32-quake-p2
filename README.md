@@ -1,3 +1,10 @@
+This is Quake 1 running on the Pico Held 2 (ESP32-P4 edition). Quick and dirty hacks
+are involved, as all I wanted was to get it running well enough on the P2. It's a "port"
+of Espressif's version running on the ESP32-P4-Function-EV-Board minus network support
+and plus audio, controls and display support for the P2. Enjoy! :)
+
+Here's the original readme file:
+
 This is a version of the Quake 1 engine that runs on the ESP32-P4-Function-EV-Board 
 when coupled with the ESP32-P4-HMI-SubBoard that contains a 1024x600 MIPI LCD. 
 
