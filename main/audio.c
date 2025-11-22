@@ -13,8 +13,10 @@
 // limitations under the License.
 
 #include "bsp/esp-bsp.h"
+/*
 #include "esp_codec_dev_defaults.h"
 #include "esp_codec_dev.h"
+*/
 #include "driver/i2c_master.h"
 #include "driver/i2s_std.h"
 #include "freertos/FreeRTOS.h"
@@ -26,7 +28,9 @@
 
 #define DEFAULT_VOLUME 50
 
+/*
 static esp_codec_dev_handle_t spk_codec_dev;
+*/
 int snd_inited;
 
 //note: keep >64 and power of 2
@@ -44,10 +48,10 @@ void audio_task(void *param) {
 	//simulate DMA to audio; just write the DMA buffer in a circular fashion.
 	int16_t *mix_buf=calloc(CHUNKSZ/2, sizeof(int16_t));
 	int old_volume=-1;
-	while(1) {
+        while(1) {
 		int mainvolume = (int)(volume.value * 100.0);
 		if (mainvolume!=old_volume) {
-			esp_codec_dev_set_out_vol(spk_codec_dev, mainvolume);
+//			esp_codec_dev_set_out_vol(spk_codec_dev, mainvolume);
 			old_volume=mainvolume;
 			printf("Set volume %f\n", mainvolume);
 		}
@@ -64,15 +68,21 @@ void audio_task(void *param) {
 			mix_buf[i]=mixed/32;
 		}
 		dma_rpos=(dma_rpos + CHUNKSZ) % BUFFER_SIZE;
+/*
 		esp_codec_dev_write(spk_codec_dev, mix_buf, CHUNKSZ);
+*/
+	        size_t written = 0;
+	        bsp_audio_i2s_write((uint8_t*) mix_buf, CHUNKSZ, &written);
+
 	}
 	free(mix_buf);
 }
 
 qboolean SNDDMA_Init(void)
 {
-	bsp_i2c_init();
+//	bsp_i2c_init();
 	bsp_audio_init(NULL);
+/*
 	spk_codec_dev=bsp_audio_codec_speaker_init();
 	esp_codec_dev_set_out_vol(spk_codec_dev, DEFAULT_VOLUME);
 	esp_codec_dev_set_out_mute(spk_codec_dev, 0);
@@ -82,7 +92,7 @@ qboolean SNDDMA_Init(void)
 		.bits_per_sample = 16,
 	};
 	esp_codec_dev_open(spk_codec_dev, &fs);
-
+*/
 	shm = &sn;
 	shm->splitbuffer = 0;
 	shm->speed = 44100;

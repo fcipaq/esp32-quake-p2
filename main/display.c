@@ -107,6 +107,7 @@ static void draw_task(void *param) {
 			},
 			.scale_x=(float)BSP_LCD_H_RES/(float)QUAKEGENERIC_RES_X,
 			.scale_y=(float)BSP_LCD_V_RES/(float)QUAKEGENERIC_RES_Y,
+                        .rotation_angle=PPA_SRM_ROTATION_ANGLE_270,
 			.mode=PPA_TRANS_MODE_BLOCKING,
 		};
 		ESP_ERROR_CHECK(ppa_do_scale_rotate_mirror(ppa, &op));

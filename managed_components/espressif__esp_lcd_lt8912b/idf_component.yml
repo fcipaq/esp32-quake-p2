@@ -1,0 +1,10 @@
+dependencies:
+  idf: '>=5.3'
+description: ESP LCD LT8912B (MIPI DSI - HDMI)
+issues: https://github.com/espressif/esp-bsp/issues
+repository: git://github.com/espressif/esp-bsp.git
+repository_info:
+  commit_sha: e29ca7330ce6c14dbfba12ec33c49ae5ee860950
+  path: components/lcd/esp_lcd_lt8912b
+url: https://github.com/espressif/esp-bsp/tree/master/components/lcd/esp_lcd_lt8912b
+version: 0.1.2

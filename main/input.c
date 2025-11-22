@@ -25,19 +25,47 @@
 #include "usb_hid.h"
 #include "hid_keys.h"
 #include "quakekeys.h"
+#include "control.h"
+#include "hwcfg.h"
+#include <driver/gpio.h>
+#include "bsp/esp-bsp.h"
+
+/*
+ BUTTON_A    = 0,
+  BUTTON_B    = 1,
+  BUTTON_X    = 2,
+  BUTTON_Y    = 3,
+  BUTTON_LEFT = 4,
+  BUTTON_RIGHT = 5,
+  BUTTON_UP   = 6,
+  BUTTON_DOWN = 7,
+  BUTTON_ST   = 8,
+  BUTTON_SEL  = 9,
+  BUTTON_L    = 10,
+  BUTTON_R    = 11,
+  BUTTON_SW   = 12,
+  
+
+*/
 
 //Mapping between USB HID keys and Quake engine keys
-const uint16_t key_conv_tab[]={
-	[KEY_TAB]=K_TAB, 
-	[KEY_ENTER]=K_ENTER, 
-	[KEY_ESC]=K_ESCAPE, 
-	[KEY_SPACE]=K_SPACE, 
-	[KEY_BACKSPACE]=K_BACKSPACE, 
-	[KEY_UP]=K_UPARROW, 
-	[KEY_DOWN]=K_DOWNARROW, 
-	[KEY_LEFT]=K_LEFTARROW, 
-	[KEY_RIGHT]=K_RIGHTARROW, 
-	[KEY_LEFTALT]=K_ALT, 
+const uint8_t key_conv_tab[]={
+	[BUTTON_A]=K_ENTER, 
+	[BUTTON_B]=K_ESCAPE, 
+	[BUTTON_X]=K_BACKSPACE, 
+	[BUTTON_Y]=K_SPACE, 
+	[BUTTON_L]='a', 
+	[BUTTON_R]='b', 
+	[BUTTON_SEL]='c', 
+	[BUTTON_SW]='d', 
+	[BUTTON_ST]=K_TAB, 
+	[BUTTON_UP]=K_UPARROW, 
+	[BUTTON_DOWN]=K_DOWNARROW, 
+	[BUTTON_LEFT]=K_LEFTARROW, 
+	[BUTTON_RIGHT]=K_RIGHTARROW, 
+/*
+        [KEY_TAB]=K_TAB, 
+        [KEY_LEFTALT]=K_ALT, 
 	[KEY_RIGHTALT]=K_ALT, 
 	[KEY_LEFTCTRL]=K_CTRL, 
 	[KEY_RIGHTCTRL]=K_CTRL, 
@@ -108,53 +136,62 @@ const uint16_t key_conv_tab[]={
 	[KEY_SLASH]='/',
 	[KEY_MINUS]='-',
 	[KEY_EQUAL]='=',
+	*/
 };
 
 static int mouse_dx=0, mouse_dy=0;
 
+void handle_hw() {
+    
+    if (ctrl_get_btn_state(BUTTON_SEL)) {
+        gpio_set_direction(PIN_PWR_EN, GPIO_MODE_OUTPUT);
+        gpio_set_level(PIN_PWR_EN, 0);
+    }
+    
+    /*
+    if (ctrl_get_btn_state(BUTTON_X)) {
+        brightness++;
+        if (brightness>=100)
+        brightness = 0;
+    	bsp_display_brightness_set(brightness);
+    }
+    */
+
+}
+
 int QG_GetKey(int *down, int *key) {
+	ctrl_update_btn_state();
 	*key=0;
 	*down=0;
-	hid_ev_t ev;
-	int ret=usb_hid_receive_hid_event(&ev);
-	if (!ret) return 0;
-	if (ev.type==HIDEV_EVENT_KEY_DOWN || ev.type==HIDEV_EVENT_KEY_UP) {
-		*down=(ev.type==HIDEV_EVENT_KEY_DOWN)?1:0;
-		if (ev.key.keycode < sizeof(key_conv_tab)/sizeof(key_conv_tab[0])) {
-			*key=key_conv_tab[ev.key.keycode];
+    
+    handle_hw();
+    
+    for (int i = 0; i < BUTTON_CNT; i++) {
+        uint16_t pressed = ctrl_get_btn_press_event(i);
+        uint16_t released = ctrl_get_btn_release_event(i);
+        if (pressed || released) {
+		*down = pressed ? 1 : 0;
+		if (i < sizeof(key_conv_tab)/sizeof(key_conv_tab[0])) {
+			*key = key_conv_tab[i];
 		}
 		return 1;
-	} else if (ev.type==HIDEV_EVENT_MOUSE_BUTTONDOWN || ev.type==HIDEV_EVENT_MOUSE_BUTTONUP) {
-		*key=K_MOUSE1+ev.no;
-		*down=(ev.type==HIDEV_EVENT_MOUSE_BUTTONDOWN)?1:0;
-		return 1;
-	} else if (ev.type==HIDEV_EVENT_MOUSE_MOTION) {
-		mouse_dx+=ev.mouse_motion.dx;
-		mouse_dy+=ev.mouse_motion.dy;
-	} else if (ev.type==HIDEV_EVENT_MOUSE_WHEEL) {
-		int d=ev.mouse_wheel.d;
-		if (d!=0) {
-			*key=(d<0)?K_MWHEELUP:K_MWHEELDOWN;
-			*down=1;
-			return 1;
-		}
 	}
-	return 0;
+    }
+    
+    return 0;
 }
 
 void QG_GetJoyAxes(float *axes) {
 }
 
 void QG_GetMouseMove(int *x, int *y) {
-	*x=mouse_dx;
-	*y=mouse_dy;
-	mouse_dx=0;
-	mouse_dy=0;
+	*x = ctrl_get_ana_y();
+	*y = -ctrl_get_ana_x();
 }
 
-
 void input_init() {
-	xTaskCreatePinnedToCore(usb_hid_task, "usbhid", 4096, NULL, 4, NULL, 1);
+   ctrl_init();
+   //xTaskCreatePinnedToCore(usb_hid_task, "usbhid", 4096, NULL, 4, NULL, 1);
 }
 
 

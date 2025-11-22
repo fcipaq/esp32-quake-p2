@@ -30,6 +30,7 @@
 #include "display.h"
 
 #include "quakedef.h"
+#include "hwcfg.h"
 
 void QG_Init(void) {
 }
@@ -62,7 +63,19 @@ void app_main() {
 	bsp_sdcard_mount();
 	display_init();
 
-	ethernet_connect();
+//	ethernet_connect();
+
+        // PWR
+        gpio_set_direction(PIN_PWR_EN, GPIO_MODE_OUTPUT);
+        gpio_set_level(PIN_PWR_EN, 1);
+
+        // enable backlight booster
+        gpio_set_direction(PIN_LCD_BL_EN, GPIO_MODE_OUTPUT);
+        gpio_set_level(PIN_LCD_BL_EN, 1);
+        
+        // enable audio amp
+        gpio_set_direction(PIN_SND_EN, GPIO_MODE_OUTPUT);
+        gpio_set_level(PIN_SND_EN, 1);
 
 	input_init();
 

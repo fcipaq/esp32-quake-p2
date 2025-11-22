@@ -57,7 +57,7 @@ int UDP_Init (void)
 	struct qsockaddr addr;
 	char *colon;
 	
-	if (COM_CheckParm ("-noudp"))
+//	if (COM_CheckParm ("-noudp"))
 		return -1;
 
 	// determine my name & address
